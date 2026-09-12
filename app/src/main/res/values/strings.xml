@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Texty appky. S diakritikou (docs/shared-standard.md 6) — obmedzenie bez diakritiky platí
+  pre `.kt` a `.ps1`, nie pre `strings.xml`.
+-->
+<resources>
+    <string name="app_name">Počasie</string>
+
+    <!-- ============ spoločné pre všetky appky ============ -->
+    <string name="nastavenia">Nastavenia</string>
+    <string name="n_spat">Späť</string>
+    <string name="n_zobraz_hesla">Zobraziť heslá</string>
+    <string name="ver_footer">%1$s %2$s · NAS %3$s</string>
+    <string name="ver_footer_new">%1$s %2$s · NAS %3$s ↑</string>
+    <string name="ver_none">—</string>
+
+    <!-- ============ hlavná obrazovka ============ -->
+    <string name="obnovit">Obnoviť</string>
+    <string name="pridat_miesto">Pridať miesto</string>
+    <string name="upozornenia">Upozornenia</string>
+    <string name="hladaj_mesto">Napíš mesto…</string>
+    <string name="zrusit">Zrušiť</string>
+    <string name="prazdno">Zatiaľ žiadne miesto</string>
+    <string name="prazdno_hint">Ťukni na + a napíš mesto. Predpoveď sa sťahuje len pre miesta, ktoré si sem pridáš.</string>
+    <string name="hladam">Hľadám…</string>
+    <string name="nic_sa_nenaslo">Nič sa nenašlo</string>
+    <string name="stahujem">Sťahujem predpoveď…</string>
+
+    <!-- Riadok miesta: teplota, rozsah dňa, zrážky. -->
+    <string name="teplota">%1$s °C</string>
+    <string name="rozsah_dna">%1$s / %2$s °C</string>
+    <string name="zrazky_mm">%1$s mm</string>
+    <!-- Zrážky sa vždy píšu s obdobím, za ktoré platia. Samotné "0,3 mm"
+         nikomu nepovie, či je to za hodinu, za deň alebo za týždeň — a to je
+         práve to, čo z čísla robí použiteľný údaj. -->
+    <string name="zrazky_mm_h">%1$s mm/h</string>
+    <string name="zrazky_mm_den">%1$s mm/deň</string>
+    <string name="zrazky_dnes">dnes %1$s mm</string>
+    <string name="bez_zrazok">dnes bez zrážok</string>
+    <string name="aktualizovane">%1$s</string>
+    <string name="stare_udaje">staré %1$s</string>
+    <string name="nikdy_nestiahnute">ešte nestiahnuté</string>
+    <string name="zmazat_miesto">Zmazať miesto</string>
+    <string name="zmazat_miesto_otazka">Odstrániť „%1$s“ zo zoznamu?</string>
+    <string name="zmazat">Zmazať</string>
+
+    <!-- ============ detail ============ -->
+    <string name="detail_hodiny">Po hodinách</string>
+    <string name="detail_dni">Po dňoch · úhrn za celý deň</string>
+
+    <!-- Graf zrážok. Jednotka je v nadpise a nie pri každom čísle: v grafe je
+         stĺpcov stovka a "mm" pri každom by z osi urobilo kašu. -->
+    <string name="graf_nadpis_hodiny">Teplota a zrážky — čiara °C, stĺpce mm</string>
+    <string name="graf_nadpis_dni">Teplota a zrážky po dňoch — čiara °C, stĺpce mm</string>
+    <string name="graf_sucho">bez zrážok</string>
+    <string name="graf_spolu">Spolu %1$s mm za %2$s · ťukni na stĺpec</string>
+    <string name="graf_dni">%1$d dní</string>
+    <string name="graf_bod_hodina">%1$s %2$s · %3$s °C · %4$s mm/h</string>
+    <string name="graf_bod_den">%1$s · %2$s °C · %3$s mm za deň</string>
+    <string name="dnes">dnes</string>
+    <string name="zajtra">zajtra</string>
+    <string name="pravdepodobnost">%1$d %%</string>
+
+    <!-- ============ upozornenia ============ -->
+    <string name="upoz_ziadne">Žiadne upozornenie</string>
+    <string name="upoz_ziadne_hint">Appka sa ozve, keď predpoveď prekročí hranicu, ktorú si tu nastavíš. Vyhodnocuje sa z už stiahnutej predpovede — nesťahuje kvôli tomu nič navyše.</string>
+    <string name="upoz_nove">Nové upozornenie</string>
+    <string name="upoz_miesto">Miesto</string>
+    <string name="upoz_vsetky_miesta">Všetky miesta</string>
+    <string name="upoz_druh">Na čo</string>
+    <string name="upoz_teplota_pod">Teplota klesne pod</string>
+    <string name="upoz_teplota_nad">Teplota stúpne nad</string>
+    <string name="upoz_zrazky_ake">Budú zrážky (akékoľvek)</string>
+    <string name="upoz_zrazky_nad">Zrážky prekročia</string>
+    <string name="upoz_hranica">Hranica</string>
+    <string name="upoz_dopredu">Koľko hodín dopredu sledovať</string>
+    <string name="upoz_hodin">%1$d h</string>
+    <string name="upoz_ulozit">Uložiť</string>
+    <string name="upoz_zmazat">Zmazať</string>
+    <string name="upoz_zla_hranica">Hranica musí byť číslo.</string>
+    <string name="upoz_povolenie">Bez povolenia notifikácií sa appka nemá ako ozvať. Povoľ ho v systéme.</string>
+
+    <!-- Znenie samotnej notifikácie. -->
+    <string name="notif_kanal">Upozornenia počasia</string>
+    <string name="notif_kanal_popis">Teplota a zrážky podľa pravidiel, ktoré si nastavíš.</string>
+    <string name="notif_teplota_pod">%1$s: %2$s °C o %3$s (pod %4$s °C)</string>
+    <string name="notif_teplota_nad">%1$s: %2$s °C o %3$s (nad %4$s °C)</string>
+    <string name="notif_zrazky">%1$s: %2$s mm o %3$s</string>
+
+    <!-- ============ widget ============ -->
+    <string name="widget_popis">Počasie pre tvoje miesta s grafom na 24 h. Roluje sa prstom, sám na sieť nechodí.</string>
+    <string name="w_obnovene">Obnovené %1$s</string>
+    <string name="w_graf_popis">Graf teploty a zrážok na najbližších 24 hodín</string>
+    <string name="w_obnovujem">Obnovujem…</string>
+    <string name="w_prazdno">Ešte nič stiahnuté — ťukni na ↻</string>
+    <string name="w_ziadne_miesta">Zatiaľ žiadne miesto — otvor appku a pridaj</string>
+    <string name="n_pismo_widget">Veľkosť písma vo widgete</string>
+    <string name="n_pismo_widget_popis">Vlastná, nezávislá od appky: widget sa číta z väčšej vzdialenosti než appka v ruke.</string>
+
+    <!-- ============ nastavenia ============ -->
+    <string name="n_obnova">Obnova na pozadí</string>
+    <string name="n_obnova_zapnuta">Sťahovať predpoveď aj keď je appka zavretá</string>
+    <string name="n_obnova_hodin">Ako často (hodín)</string>
+    <string name="n_len_wifi">Len na Wi-Fi</string>
+    <string name="n_len_wifi_popis">Zapnuté = na mobilných dátach sa nesťahuje vôbec. Predpoveď sa vtedy obnoví, až keď appku otvoríš.</string>
+    <string name="n_rano">Stiahnuť ráno cez Wi-Fi</string>
+    <string name="n_rano_popis">Zapnuté = raz denne o zvolenej hodine sa stiahne najnovšia predpoveď, ale výhradne cez Wi-Fi. Keď v tú hodinu Wi-Fi nie je, sťahovanie počká na najbližšiu — cez mobilné dáta sa nespustí nikdy. Už stiahnutá predpoveď medzitým platí ďalej a nezmaže sa.</string>
+    <string name="n_rano_hodina">O ktorej hodine</string>
+    <string name="n_dni">Koľko dní predpovede sťahovať</string>
+    <string name="n_dni_popis">Menej dní = menší prenos. 3 dni stačia na oblečenie, 7 na plánovanie víkendu.</string>
+    <string name="n_hodinovka">Sťahovať aj hodinovú predpoveď</string>
+    <string name="n_hodinovka_popis">Vypnuté ušetrí zhruba dve tretiny prenosu, ale detail po hodinách aj upozornenia vtedy nefungujú — tie sa počítajú práve z nej.</string>
+    <!-- Sekcia "Prenesené dáta" si texty nesie sama v Prenos.kt — je to
+         spoločný súbor pre všetky appky a deväť kópií tých istých reťazcov
+         v deviatich strings.xml by sa rozišlo pri prvej oprave. -->
+
+    <string name="n_data">Mobilné dáta</string>
+    <string name="n_otvorenie_na_datach">Sťahovať pri otvorení appky aj na mobilných dátach</string>
+    <string name="n_otvorenie_na_datach_popis">Vypnuté = na mobilných dátach appka pri otvorení nesťahuje nič, ukáže poslednú uloženú predpoveď. Nové dáta si vypýtaš tlačidlom ↻ alebo potiahnutím zoznamu. Na Wi-Fi sa sťahuje ako doteraz.</string>
+
+    <string name="upoz_poslanych">Nové upozornenia: %1$d</string>
+
+    <!-- Uloženie nastavení. Odchod z obrazovky ukladá tiež, tlačidlo je pre
+         istotu toho, kto ju hľadá — bez neho nie je vidieť, že sa uložilo. -->
+    <string name="up_ulozit">Uložiť</string>
+    <string name="n_ulozene">Uložené</string>
+
+    <!-- ============ self-update (rovnaké vo všetkých appkách) ============ -->
+    <string name="up_prompt_title">Nová verzia</string>
+    <string name="up_prompt_msg">Na NAS-e je verzia %1$s, máš %2$s. Nainštalovať teraz?</string>
+    <string name="up_install">Nainštalovať</string>
+    <string name="up_later">Neskôr</string>
+    <string name="up_latest">Máš najnovšiu verziu (%1$d).</string>
+    <string name="up_checking">Pozerám na NAS…</string>
+    <string name="up_downloading">Sťahujem…</string>
+    <string name="up_error">Aktualizácia sa nepodarila: %1$s</string>
+    <string name="up_bez_udajov">nie sú vyplnené údaje k NAS-u</string>
+    <string name="up_need_perm">Najprv povoľ inštaláciu z tejto aplikácie.</string>
+    <string name="up_bad_apk">Stiahnutý súbor nie je platné APK.</string>
+
+    <!-- Sekcia Aktualizácie v Nastaveniach (docs/shared-standard.md 2.8 §3). Názvy aj
+         znenia sú zámerne rovnaké ako vo `wake-nb`, `stocks` a `askener`. -->
+    <string name="up_hint">Appka sa po spustení sama pozrie na NAS (len na domácej sieti, nie cez mobilné dáta). Sťahuje sa až po tvojom potvrdení.</string>
+    <string name="up_host">Adresa NAS-u</string>
+    <string name="up_share">Zdieľaný priečinok</string>
+    <string name="up_path">Podpriečinok appky</string>
+    <string name="up_file">Názov súboru</string>
+    <string name="up_user">SMB meno</string>
+    <string name="up_pass">SMB heslo</string>
+    <string name="up_check">Skontrolovať teraz</string>
+    <string name="n_sekcia_nas">Server (aktualizácia appky)</string>
+    <string name="n_sekcia_verzia">Verzia</string>
+    <string name="n_verzia_stav">Nainštalovaná verzia %1$s (%2$d)</string>
+    <string name="n_host_popis">IP alebo meno NAS-u v domácej sieti, napr. nas.local.</string>
+    <string name="n_share_popis">Zdieľaný priečinok na NAS-e, v ktorom sú appky. U nás Android.</string>
+    <string name="n_path_popis">Podpriečinok tejto appky v tom share-i. U nás Pocasie.</string>
+    <string name="n_file_popis">Názov APK súboru. Meno je pevné a pri každom vydaní sa prepíše; verziu appka číta z APK, nie z názvu.</string>
+    <string name="n_user_popis">Meno SMB účtu, ktorý má na NAS-e prístup k tomu priečinku.</string>
+    <string name="n_pass_popis">Heslo k tomu SMB účtu. Leží v šifrovanom úložisku telefónu.</string>
+
+    <!-- ============ chyby ============ -->
+    <string name="chyba_siet">Nedá sa spojiť so serverom predpovede.</string>
+    <string name="chyba_odpoved">Server predpovede odpovedal niečím, čomu nerozumiem.</string>
+</resources>

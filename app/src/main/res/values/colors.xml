@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Paleta appky. Mena su vo vsetkych appkach rovnake (viz docs/shared-standard.md
+  2.6) — kod farbu nikdy neurcuje sam, vzdy siaha na meno. Preto sa da nocny
+  rezim vyriesit jedinym suborom vo `values-night` a nic sa nemoze rozbit.
+
+  Pocasie ma oproti ostatnym appkam dve farby navyse: `teplo` a `zima`.
+  Zelena/cervena (`rast`/`pokles`) tu nedavaju zmysel — teplota nie je zisk
+  ani strata a cervena pri +30 C by hlasila poplach tam, kde je leto.
+-->
+<resources>
+    <color name="ver_text">#6B7280</color>
+    <color name="ver_warn">#B45309</color>
+
+    <color name="pozadie">#FFFFFF</color>
+    <color name="text_hlavny">#111827</color>
+    <color name="text_vedlajsi">#6B7280</color>
+    <color name="rast">#059669</color>
+    <color name="pokles">#DC2626</color>
+    <color name="chyba">#B91C1C</color>
+    <color name="widget_pozadie">#F3F4F6</color>
+
+    <!-- Teplota: teple oranzova a studena modra. Nie zelena/cervena — tie v
+         ostatnych appkach znamenaju "hore/dole" a tu by klamali. -->
+    <color name="teplo">#EA580C</color>
+    <color name="zima">#2563EB</color>
+    <!-- Zrazky. Rovnaka modra ako `zima` by splyvala s mrazom, preto tmavsia. -->
+    <color name="zrazky">#0E7490</color>
+
+    <!-- Ikona na plochu (adaptivna, minSdk 26 = staci mipmap-anydpi-v26).
+         Svetlomodre pozadie so slnkom a oblakom — so ziadnou inou appkou na
+         ploche sa nemyli (askener ma sviece, stocks stlpce, meniny kalendar). -->
+    <color name="ic_launcher_background">#DBEAFE</color>
+    <color name="ic_launcher_slnko">#F59E0B</color>
+    <color name="ic_launcher_oblak">#FFFFFF</color>
+    <color name="ic_launcher_dazd">#2563EB</color>
+
+    <!-- Farba ikon v hlavicke (obnovit, nastavenia, lupa). Meno je vo vsetkych
+         appkach rovnake, hodnota podla palety - viz docs/shared-standard.md 2.6. -->
+    <color name="ikona">#6B7280</color>
+
+    <color name="widget_ciara">#D1D5DB</color>
+
+    <!-- Ohraniceny vstupny riadok a oddelovac pod hlavickou. -->
+    <color name="pole_pozadie">#F3F4F6</color>
+    <color name="ciara">#E5E7EB</color>
+</resources>

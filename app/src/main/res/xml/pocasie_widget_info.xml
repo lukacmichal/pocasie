@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Vychodzia velkost su 4 bunky na sirku a 3 na vysku (4. 9. 2026, predtym 2).
+  Kazde miesto ma odvtedy pod nazvom GRAF na najblizsich 24 h a do dvoch
+  riadkov sa vosiel len nazov s teplotou — widget vyzeral orezany hned po
+  pridani. Pri troch riadkoch vidiet jedno miesto aj s grafom cele a dalsie
+  sa doroluju prstom.
+
+  Da sa zmensit az na 2 bunky na sirku; vyska pod 80 dp uz graf odreze, preto
+  je `minResizeHeight` prave tam.
+
+  updatePeriodMillis je tu na prekreslenie z cache, nie na stahovanie — widget
+  sam na siet nechodi.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="120dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="80dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="3"
+    android:description="@string/widget_popis"
+    android:initialLayout="@layout/widget_pocasie"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:updatePeriodMillis="1800000" />

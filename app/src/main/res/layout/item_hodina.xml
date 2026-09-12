@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Jedna hodina v pásiku: cas, teplota, zrazky. Uzky stlpec, aby sa ich na
+     obrazovku zmestilo aspon sest a dal sa citat priebeh dna. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:minWidth="58dp"
+    android:paddingHorizontal="4dp"
+    android:paddingVertical="8dp">
+
+    <TextView
+        android:id="@+id/hodina_cas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/text_vedlajsi" />
+
+    <TextView
+        android:id="@+id/hodina_teplota"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingVertical="4dp"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_hlavny" />
+
+    <TextView
+        android:id="@+id/hodina_zrazky"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="@color/zrazky" />
+</LinearLayout>

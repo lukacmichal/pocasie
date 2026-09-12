@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Jeden naposkytovany symbol pod polom na pridanie.
+
+  Symbol je hore a tucne, pod nim tlmene meno a burza: prave burza je to, kvoli
+  comu ponuka vznikla — `SXR8` sam o sebe neexistuje a rozdiel medzi `SXR8.DE`
+  a `SXR8.MI` sa neda uhadnut z tickeru, len z toho, kde sa obchoduje.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="10dp"
+    android:background="?android:selectableItemBackground">
+
+    <TextView
+        android:id="@+id/navrh_symbol"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_hlavny" />
+
+    <TextView
+        android:id="@+id/navrh_popis"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="12sp"
+        android:textColor="@color/text_vedlajsi" />
+</LinearLayout>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Siet je len na predpoved a self-update. Ziadna poloha: miesta si clovek
+         zada sam a suradnice prichadzaju z vyhladavania, takze appka nepotrebuje
+         ACCESS_FINE_LOCATION ani nic, co by sa dalo zneuzit. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Upozornenia na teplotu a zrazky. Od Androidu 13 sa o povolenie pyta
+         dialogom — appka si ho vypyta az pri prvom ulozenom upozorneni,
+         nie pri starte. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".App"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Pocasie">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".PocasieWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/pocasie_widget_info" />
+        </receiver>
+
+        <!--
+            Obsah rolovatelnej mriezky vo widgete. Povolenie BIND_REMOTEVIEWS je
+            povinne: bez neho by sa k sluzbe mohla pripojit ktorakolvek appka,
+            takze si system pyta, aby ju smel viazat iba proces launchera.
+        -->
+        <service
+            android:name=".MiestaService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <activity
+            android:name=".NastaveniaActivity"
+            android:exported="false"
+            android:label="@string/nastavenia" />
+
+        <!--
+          Detail miesta: po hodinach a po dnoch. `parentActivityName` kvoli
+          sipke spat v hlavicke — bez nej sa z detailu da vratit len systemovym
+          gestom.
+        -->
+        <activity
+            android:name=".DetailActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Upozornenia (teplota, zrazky) — vlastna obrazovka, lebo pravidiel
+             moze byt viac a do Nastaveni by sa nezmestili citatelne. -->
+        <activity
+            android:name=".UpozorneniaActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+    </application>
+</manifest>

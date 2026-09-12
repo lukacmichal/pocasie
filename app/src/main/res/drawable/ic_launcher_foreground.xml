@@ -1,0 +1,41 @@
+<!--
+  Ikona na plochu: slnko za oblakom a dve kvapky.
+
+  Preco prave takto: na ploche uz su askener (sviece), stocks (stlpce), meniny
+  (kalendar) a tankomat (pumpa). Slnko s oblakom je jediny tvar, ktory sa
+  s nimi neda zamenit ani v malom.
+
+  Adaptivna ikona ma bezpecnu zonu 66 z 108 dp — kresba je preto v strede
+  a nesiaha do rohov, ktore vie maska orezat (chyba IKONY-1 z 27. 8. 2026).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Slnko vlavo hore, ciastocne za oblakom. -->
+    <path
+        android:fillColor="@color/ic_launcher_slnko"
+        android:pathData="M42,36m-13,0a13,13 0,1 1,26 0a13,13 0,1 1,-26 0" />
+
+    <!-- Luce. Kratke a hrube, aby boli vidiet aj v 48 dp. -->
+    <path
+        android:strokeColor="@color/ic_launcher_slnko"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M42,15 L42,20 M42,52 L42,57 M21,36 L26,36 M58,36 L63,36 M27,21 L31,25 M53,47 L57,51 M57,21 L53,25 M31,47 L27,51" />
+
+    <!-- Oblak. -->
+    <path
+        android:fillColor="@color/ic_launcher_oblak"
+        android:pathData="M40,72 C33,72 28,67 28,61 C28,55 33,50 39,50 C41,43 47,38 55,38 C64,38 72,45 73,54 C79,55 83,60 83,65 C83,69 80,72 76,72 Z" />
+
+    <!-- Dve kvapky pod oblakom. -->
+    <path
+        android:fillColor="@color/ic_launcher_dazd"
+        android:pathData="M48,78 C48,78 44,84 44,87 C44,89 46,91 48,91 C50,91 52,89 52,87 C52,84 48,78 48,78 Z" />
+    <path
+        android:fillColor="@color/ic_launcher_dazd"
+        android:pathData="M66,78 C66,78 62,84 62,87 C62,89 64,91 66,91 C68,91 70,89 70,87 C70,84 66,78 66,78 Z" />
+</vector>

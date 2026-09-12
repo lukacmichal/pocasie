@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zoznam pravidiel + tlacidlo na pridanie. Samotne pridavanie je dialog. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/pozadie"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp">
+
+        <ImageView
+            android:id="@+id/btn_spat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_spat"
+            android:contentDescription="@string/n_spat"
+            android:background="?android:selectableItemBackgroundBorderless"
+            app:tint="@color/ikona" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="8dp"
+            android:paddingEnd="0dp"
+            android:text="@string/upozornenia"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_hlavny" />
+
+        <ImageView
+            android:id="@+id/btn_pridat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_pridat"
+            android:contentDescription="@string/upoz_nove"
+            android:background="?android:selectableItemBackgroundBorderless"
+            app:tint="@color/ikona" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/ciara" />
+
+    <TextView
+        android:id="@+id/prazdno"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@color/text_vedlajsi"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/zoznam"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Jedna bunka mriezky vo widgete. Dva riadky:
+
+      Nitra                        21
+      13 / 28 °C            ☔ 2.0 mm
+
+  Prvy riadok:  nazov VLAVO, aktualna teplota VPRAVO (najvacsie cislo).
+  Druhy riadok: rozsah dna VLAVO, zrazky VPRAVO.
+
+  Preco je teplota sama na prvom riadku a rozsah az pod nou: rovnaky dovod ako
+  v askener-i (uloha SCANNER-6). Ked su obe cisla v jednom stlpci vpravo, ten
+  stlpec je siroky podla toho dlhsieho ("13 / 28 °C") a na nazov miesta ostane
+  tak malo, ze sa oreze aj "Nitrianske Hrn…".
+
+  Farby ani velkosti pisma tu nie su nahodou tlmene: vsetko podstatne prepise
+  [MiestaFactory] vyslovne, lebo widget kresli launcher a `values-night`
+  aj `fontScale` sa v nom riadia telefonom, nie nastavenim appky.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/b_koren"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/b_ciara"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/widget_ciara"
+        android:contentDescription="@null" />
+
+    <!-- ── prvy riadok: nazov · teplota ─────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:baselineAligned="false"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:id="@+id/b_miesto"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/text_hlavny" />
+
+        <TextView
+            android:id="@+id/b_teplota"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:textColor="@color/text_hlavny" />
+    </LinearLayout>
+
+    <!-- ── druhy riadok: rozsah dna · zrazky ────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:baselineAligned="false"
+        android:paddingBottom="6dp">
+
+        <TextView
+            android:id="@+id/b_rozsah"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/text_vedlajsi" />
+
+        <TextView
+            android:id="@+id/b_zrazky"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:textColor="@color/zrazky" />
+    </LinearLayout>
+
+    <!--
+      Graf na najblizsich 24 h (teplota ciarou, zrazky stlpcami). Je to
+      OBRAZOK, nie View: `RemoteViews` poznaju len hrstku hotovych prvkov
+      a vlastny `GrafView` sa do nich poslat neda. Kresli ho [GrafObrazok]
+      tou istou rutinou ako graf v appke, takze tvar sedi.
+
+      `adjustViewBounds` + `fitXY`: obrazok vznika najviac 720 px siroky
+      (pamat `RemoteViews`) a tu sa roztiahne na skutocnu sirku widgetu.
+
+      Vyska je `wrap_content` a URCUJE JU POMER STRAN obrazka (5. 9. 2026).
+      Pevnych 52 dp znamenalo, ze pri jedinom sledovanom mieste ostal widget
+      z dvoch tretin prazdny; teraz si [MiestaFactory] vyska spocita z toho,
+      kolko miesta widget naozaj ma. Cez `RemoteViews` sa vyska nastavit neda
+      (`setViewLayoutHeight` je az od Androidu 12), pomer stran je jedina cesta,
+      ktora funguje aj na desiatke.
+    -->
+    <ImageView
+        android:id="@+id/b_graf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:contentDescription="@string/w_graf_popis" />
+</LinearLayout>

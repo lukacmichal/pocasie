@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Hlavna obrazovka: hlavicka + zoznam miest.
+
+  Hlavicka drzi styri ikony (pridat, upozornenia, obnovit, nastavenia) a pod nou
+  je pole na pridanie miesta, ktore sa ukazuje az po tuknuti na "+". Trvalo
+  viditelne pole by na uzkom telefone ukradlo cely riadok kvoli veci, ktora sa
+  robi raz za mesiac.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/pozadie"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp">
+
+        <TextView
+            android:id="@+id/nadpis"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/app_name"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_hlavny" />
+
+        <ImageView
+            android:id="@+id/btn_pridat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_pridat"
+            android:contentDescription="@string/pridat_miesto"
+            android:background="?android:selectableItemBackgroundBorderless"
+            app:tint="@color/ikona" />
+
+        <ImageView
+            android:id="@+id/btn_upozornenia"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_upozornenie"
+            android:contentDescription="@string/upozornenia"
+            android:background="?android:selectableItemBackgroundBorderless"
+            app:tint="@color/ikona" />
+
+        <ImageView
+            android:id="@+id/btn_obnovit"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_obnovit"
+            android:contentDescription="@string/obnovit"
+            android:background="?android:selectableItemBackgroundBorderless"
+            app:tint="@color/ikona" />
+
+        <ImageView
+            android:id="@+id/btn_nastavenia"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_nastavenia"
+            android:contentDescription="@string/nastavenia"
+            android:background="?android:selectableItemBackgroundBorderless"
+            app:tint="@color/ikona" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/panel_hladania"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingHorizontal="14dp"
+        android:paddingBottom="8dp">
+
+        <EditText
+            android:id="@+id/pole_hladania"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hladaj_mesto"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:background="@drawable/pole_hladania"
+            android:textColor="@color/text_hlavny"
+            android:textColorHint="@color/text_vedlajsi"
+            android:autofillHints="" />
+
+        <TextView
+            android:id="@+id/stav_hladania"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="6dp"
+            android:textSize="12sp"
+            android:textColor="@color/text_vedlajsi"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/zoznam_navrhov"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/ciara" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/potiahni"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/zoznam_miest"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <TextView
+        android:id="@+id/prazdno"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@color/text_vedlajsi"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/verzia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingVertical="6dp"
+        android:textSize="11sp"
+        android:textColor="@color/ver_text" />
+</LinearLayout>

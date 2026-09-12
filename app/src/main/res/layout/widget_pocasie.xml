@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget na plochu: sledovane miesta s teplotou a rozsahom dna.
+
+  **Roluje sa PRSTOM**, rovnako ako widget askener-a: zoznam je skutocna
+  `GridView` plnena cez `RemoteViewsService` ([MiestaService]), nie rad
+  natvrdo vygenerovanych riadkov. Pocet stlpcov nastavuje provider podla
+  SKUTOCNEJ sirky widgetu.
+
+  Hore je cas poslednej obnovy a tlacidlo ↻. Widget sam od seba na siet
+  nechodi — tuknutie na ↻ JE ten suhlas.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_koren"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@color/widget_pozadie">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/w_cas"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="@color/text_vedlajsi" />
+
+        <ImageButton
+            android:id="@+id/w_obnov"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:padding="5dp"
+            android:background="@null"
+            android:contentDescription="@string/obnovit"
+            android:src="@drawable/ic_obnovit" />
+    </LinearLayout>
+
+    <!--
+      Prazdny stav. `setEmptyView` ho ukaze namiesto mriezky, ked v nej nic
+      nie je — bez neho by widget po instalacii vyzeral ako cierna diera.
+    -->
+    <TextView
+        android:id="@+id/w_prazdno"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="12dp"
+        android:textSize="13sp"
+        android:textColor="@color/text_vedlajsi" />
+
+    <GridView
+        android:id="@+id/w_mriezka"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:numColumns="1"
+        android:horizontalSpacing="18dp"
+        android:verticalSpacing="0dp"
+        android:stretchMode="columnWidth"
+        android:scrollbars="none" />
+</LinearLayout>

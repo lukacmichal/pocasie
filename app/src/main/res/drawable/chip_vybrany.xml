@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Vybrane tlacidlo rozsahu. Farba je `zrazky`, teda tá istá ako stlpce v grafe
+  — vyber tak patri viditelne ku grafu a nie k nadpisu nad nim.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/zrazky" />
+    <corners android:radius="16dp" />
+</shape>
