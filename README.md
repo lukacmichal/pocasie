@@ -8,6 +8,20 @@ Android · Kotlin · Views + home-screen widget · minSdk 26 · 79 unit tests
 Data comes from [Open-Meteo](https://open-meteo.com) — no key, no registration.
 The phone's location is never used, so the app asks for no location permission.
 
+## What it looks like
+
+| The places I watch | One place in detail | Alerts |
+|---|---|---|
+| <img src="docs/screenshots/places.png" alt="List of watched places with the current temperature" width="240"> | <img src="docs/screenshots/detail.png" alt="Temperature line and precipitation bars, then hour by hour and day by day" width="240"> | <img src="docs/screenshots/alerts.png" alt="Two alert rules with their own switches" width="240"> |
+
+The chart is one drawing, not two: the line is the temperature, the bars are
+the millimetres, and tapping a bar says which hour it belongs to. Below it the
+same data twice — by the hour for today, by the day for the week, with sunrise,
+sunset and the moon phase.
+
+The interface is Slovak. The forecast above is the real one for the three
+places in the screenshot, taken on 20 September 2026.
+
 ## Why another weather app
 
 Because the ones I had downloaded something every time I looked at them, and
