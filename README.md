@@ -79,30 +79,6 @@ whole day, not only the part inside the alert window, so a 24-hour window
 opened at 15:00 still counts tomorrow's afternoon storm. One frost or one rain
 rings once, not on every refresh while it lasts.
 
-## Two bugs that killed the widget completely
-
-Both were there from day one and showed up only when I really added the widget
-to a home screen on Android 10:
-
-1. **`setNumColumns` through `RemoteViews`** is only "remotable" from Android 12.
-   On older versions the host rejects the whole layout and shows *"Problem
-   loading widget"*. The column count now lives only in the layout XML.
-2. **An immutable collection template.** `setPendingIntentTemplate` with
-   `FLAG_IMMUTABLE` drops the fill-in intent of each row, so the detail screen
-   opened with an empty id and closed straight away — tapping a row looked like
-   it "did nothing".
-
-The same pair is waiting in every app that has a collection in a widget, so
-both are now written down in the [shared standard](docs/shared-standard.md).
-
-## One that almost got through
-
-The hourly forecast starts at **midnight of today**, not at the current hour.
-Checked live at 23:00: the first entry was `00:00`. Taking the first hour as
-"now" would run the alerts over a day that is already over — the app would warn
-at eleven in the evening about morning fog. "Now" is therefore taken from
-`current.time`, in **the time zone of that place**, not from the phone's clock.
-
 ## Where things are
 
 | File | Responsible for |
