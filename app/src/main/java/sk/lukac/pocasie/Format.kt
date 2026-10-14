@@ -34,6 +34,17 @@ object Format {
         else -> "%.0f".format(SK, mm)
     }
 
+    /**
+     * Hranica upozornenia tak, ako ju clovek zadal: cele cislo bez desatin,
+     * inak na desatinu. `teplota()` by -2,5 °C ukazala ako -3 a pri uprave
+     * pravidla by sa tak aj ulozila; `zrazky()` by 0,5 mm pri teplote nevedela.
+     */
+    fun hranica(x: Double): String {
+        val zaokr = Math.round(x * 10) / 10.0
+        return if (zaokr == Math.rint(zaokr)) "%.0f".format(SK, zaokr)
+        else "%.1f".format(SK, zaokr)
+    }
+
     /** "2026-09-03T14:00" -> "14:00" */
     fun hodina(cas: String): String =
         if (cas.length >= 16) cas.substring(11, 16) else cas

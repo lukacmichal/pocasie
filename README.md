@@ -3,7 +3,7 @@
 A weather forecast for the places I pick, with **alerts for temperature and
 rain** — built around one rule: download as little data as possible.
 
-Android · Kotlin · Views + home-screen widget · minSdk 26 · 79 unit tests
+Android · Kotlin · Views + home-screen widget · minSdk 26 · 86 unit tests
 
 Data comes from [Open-Meteo](https://open-meteo.com) — no key, no registration.
 The phone's location is never used, so the app asks for no location permission.
@@ -70,6 +70,15 @@ so the app and the home screen can never look different. The widget gets it as
 a `Bitmap`, because `RemoteViews` cannot host a custom `View`, and it never goes
 to the network by itself.
 
+## Alerts
+
+A rule is temperature below or above a limit, any rain, or rain over a limit —
+**per hour or per day**. "Over 2 mm" means two very different things: 2 mm in
+an hour is proper rain, 2 mm in a day is drizzle. The daily one adds up the
+whole day, not only the part inside the alert window, so a 24-hour window
+opened at 15:00 still counts tomorrow's afternoon storm. One frost or one rain
+rings once, not on every refresh while it lasts.
+
 ## Two bugs that killed the widget completely
 
 Both were there from day one and showed up only when I really added the widget
@@ -111,7 +120,7 @@ at eleven in the evening about morning fog. "Now" is therefore taken from
 
 ```
 ./gradlew :app:assembleDebug
-./gradlew :app:testDebugUnitTest    # 79 tests
+./gradlew :app:testDebugUnitTest    # 86 tests
 ```
 
 The UI is in Slovak. The original Slovak README with the version history is in

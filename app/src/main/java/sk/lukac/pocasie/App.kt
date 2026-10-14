@@ -22,6 +22,7 @@ class App : Application() {
         super.onCreate()
         Vzhlad.pouzi(this)
         Alerty.pripravKanal(this)
+        Prefs.nastavSiestuRaz(this)
         Obnova.naplanuj(this)
     }
 }

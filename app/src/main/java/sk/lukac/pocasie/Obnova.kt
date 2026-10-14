@@ -2,9 +2,13 @@ package sk.lukac.pocasie
 
 import android.content.Context
 import android.util.Log
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -16,29 +20,46 @@ import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
 /**
- * Stahovanie predpovede na pozadi.
+ * Stahovanie predpovede na pozadi — VYHRADNE po Wi-Fi.
  *
  * WorkManager, nie AlarmManager: system smie pracu odlozit a zlucit s inou,
  * a `NetworkType.UNMETERED` drzi slub, ze sa na mobilnych datach nespusti
- * vobec. Rovnaka schema ako obnova cien v `askener`.
- *
- * **Preplanuje sa pri kazdej zmene nastavenia** (`REPLACE`), inak by zmena
- * intervalu platila az po tom, co dobehne ten stary — a to je pri 24 h
- * cely den.
+ * vobec. Od ANDROID-5 (13. 10. 2026) to plati bez vynimky — volba „Len na
+ * Wi-Fi" z Nastaveni zmizla, mobilne data si uz zapnut neda. V samotnej
+ * praci to este strazi [Prenos.naMobilnychDatach]: meranost nie je to iste
+ * co simka (docs/shared-standard.md 2.8b), operator moze neobmedzene data hlasit ako
+ * nemerane.
  *
  * Rozvrhy su DVA a kazdy odpoveda na inu otazku:
  *
- * 1. **interval** (`pocasie_obnova`) — ako casto sa obnovuje cez den,
- * 2. **rano** (`pocasie_obnova_rano`) — o ktorej hodine ma byt v telefone
- *    to najnovsie, nez clovek odide z domu. Vzdy len po Wi-Fi.
+ * 1. **interval** (`pocasie_obnova`) — ako casto sa obnovuje cez den.
+ *    Periodicka praca, preplanuje sa pri kazdej zmene nastavenia (`UPDATE`).
+ * 2. **rano** (`pocasie_obnova_rano_1x`) — o ktorej hodine ma byt v telefone
+ *    to najnovsie, nez clovek odide z domu. **Jednorazova praca, ktora si
+ *    naplanuje dalsiu, nie periodicka** (ANDROID-5): periodicka rata dalsi
+ *    beh od skutocneho konca predosleho, takze rano bez Wi-Fi a Wi-Fi az
+ *    o 17:00 by z rozvrhu urobilo „17:00" natrvalo. Dvojca: `RannaObnova`
+ *    v tankomate, `PondelnaObnova` v Stocks.
  */
 object Obnova {
     private const val TAG = "Obnova"
     private const val MENO = "pocasie_obnova"
-    private const val MENO_RANO = "pocasie_obnova_rano"
+
+    /**
+     * Novy nazov od ANDROID-5. Pod starym visi periodicka praca a jednorazova
+     * sa k periodickej pripojit neda — stary sa preto len rusi.
+     */
+    private const val MENO_RANO = "pocasie_obnova_rano_1x"
+    private const val MENO_RANO_STARE = "pocasie_obnova_rano"
+
+    /** Kolko pokusov ma jeden ranny beh, kym to vzda do zajtra. */
+    private const val POKUSOV = 5
 
     /** Vstup pracovnika: preskocit kontrolu cerstvosti. */
     const val KLUC_VYNUTENE = "vynutene"
+
+    /** Vstup pracovnika: ranny beh — po nom sa planuje zajtrajsok. */
+    const val KLUC_RANO = "rano"
 
     fun naplanuj(ctx: Context) {
         naplanujInterval(ctx)
@@ -52,9 +73,7 @@ object Obnova {
             return
         }
         val podmienky = Constraints.Builder()
-            .setRequiredNetworkType(
-                if (Prefs.lenWifi(ctx)) NetworkType.UNMETERED else NetworkType.CONNECTED
-            )
+            .setRequiredNetworkType(NetworkType.UNMETERED)
             .build()
         val poziadavka = PeriodicWorkRequestBuilder<Praca>(
             Prefs.obnovaHodin(ctx).toLong(), TimeUnit.HOURS,
@@ -63,48 +82,61 @@ object Obnova {
     }
 
     /**
-     * Ranne stiahnutie o [Prefs.rannaHodina] — **vyhradne po Wi-Fi**.
+     * Ranne stiahnutie o [Prefs.rannaHodina].
      *
-     * `NetworkType.UNMETERED` nie je len setrenie: je to cely zmysel tohto
-     * rozvrhu. Ked v tu hodinu Wi-Fi nie je, WorkManager pracu NEZAHODI ani
-     * nepusti cez simku — pocka, kym sa Wi-Fi objavi. Uz stiahnuta predpoved
-     * lezi na disku a plati dalej, takze cakanie nikoho neobera o data.
+     * Ked v tu hodinu Wi-Fi nie je, WorkManager pracu NEZAHODI ani nepusti
+     * cez simku — pocka, kym sa Wi-Fi objavi. Uz stiahnuta predpoved lezi na
+     * disku a plati dalej, takze cakanie nikoho neobera o data.
      *
      * `vynutene = true`: rano sa stahuje aj vtedy, ked je ulozena predpoved
      * este "cerstva". O 6:00 ma byt v telefone to najnovsie, nie nieco spred
      * hodiny a pol — a styri miesta stoja po Wi-Fi zopar kilobajtov.
      *
-     * Politika je `KEEP`, kym sa hodina nezmenila. Appka planuje pri kazdom
-     * starte a `UPDATE` s novym odkladom by rozvrh posuval donekonecna —
-     * kto appku otvara kazdy vecer, tomu by rano nestiahla nikdy.
+     * Politika je `KEEP`, kym sa hodina nezmenila: appka planuje pri kazdom
+     * starte a `REPLACE` by cakajucu pracu zahodil.
      */
     private fun naplanujRannu(ctx: Context) {
         val wm = WorkManager.getInstance(ctx.applicationContext)
+        wm.cancelUniqueWork(MENO_RANO_STARE)
         if (!Prefs.rannaObnova(ctx)) {
             wm.cancelUniqueWork(MENO_RANO)
             Prefs.zapamataRannyRozvrh(ctx, "")
             return
         }
         val hodina = Prefs.rannaHodina(ctx)
-        val podpis = "rano=$hodina"
+        val podpis = "1x:rano=$hodina"
         val politika = if (Prefs.rannyRozvrh(ctx) == podpis) {
-            ExistingPeriodicWorkPolicy.KEEP
+            ExistingWorkPolicy.KEEP
         } else {
-            ExistingPeriodicWorkPolicy.UPDATE
+            ExistingWorkPolicy.REPLACE
         }
-        val poziadavka = PeriodicWorkRequestBuilder<Praca>(24, TimeUnit.HOURS)
+        wm.enqueueUniqueWork(MENO_RANO, politika, rannaPoziadavka(hodina, System.currentTimeMillis()))
+        Prefs.zapamataRannyRozvrh(ctx, podpis)
+    }
+
+    /**
+     * Zajtrajsi ranny beh, volany z beziacej prace. `APPEND_OR_REPLACE`, nie
+     * `REPLACE`: ten by zrusil prave beziacu pracu, teda samu seba.
+     */
+    private fun naplanujZajtrajsok(ctx: Context) {
+        WorkManager.getInstance(ctx.applicationContext).enqueueUniqueWork(
+            MENO_RANO, ExistingWorkPolicy.APPEND_OR_REPLACE,
+            rannaPoziadavka(Prefs.rannaHodina(ctx), System.currentTimeMillis()))
+    }
+
+    private fun rannaPoziadavka(hodina: Int, teraz: Long): OneTimeWorkRequest =
+        OneTimeWorkRequestBuilder<Praca>()
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.UNMETERED)
                     .build()
             )
-            .setInitialDelay(
-                odkladDoHodiny(hodina, System.currentTimeMillis()), TimeUnit.MILLISECONDS)
-            .setInputData(workDataOf(KLUC_VYNUTENE to true))
+            .setInitialDelay(odkladDoHodiny(hodina, teraz), TimeUnit.MILLISECONDS)
+            // 5, 10, 20, 40 min: vypadok Open-Meteo o 6:00 sa do odchodu
+            // doziha, ale beh nestrieli pokusy kazdych 30 s.
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 5, TimeUnit.MINUTES)
+            .setInputData(workDataOf(KLUC_VYNUTENE to true, KLUC_RANO to true))
             .build()
-        wm.enqueueUniquePeriodicWork(MENO_RANO, politika, poziadavka)
-        Prefs.zapamataRannyRozvrh(ctx, podpis)
-    }
 
     /**
      * Kolko milisekund zostava do najblizsej [hodina]:00 miestneho casu.
@@ -165,17 +197,29 @@ object Obnova {
 
     class Praca(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
         override fun doWork(): Result {
-            val vynutene = inputData.getBoolean(KLUC_VYNUTENE, false)
-            val hotovych = stiahniVsetko(applicationContext, vynutene)
-            if (hotovych == 0 && Prefs.miesta(applicationContext).isNotEmpty()) {
+            val ctx = applicationContext
+            val rano = inputData.getBoolean(KLUC_RANO, false)
+            // Nemerana siet, ale simka: nestahovat nic (ANDROID-5).
+            val naDatach = Prenos.naMobilnychDatach(ctx)
+            if (naDatach && !rano) return Result.success()
+            val hotovych = if (naDatach) 0
+                else stiahniVsetko(ctx, inputData.getBoolean(KLUC_VYNUTENE, false))
+            val neuspech = hotovych == 0 && Prefs.miesta(ctx).isNotEmpty()
+            if (!neuspech) {
+                Alerty.vyhodnot(ctx)
+                // Widget kresli launcher a o novych datach sa sam nedozvie —
+                // bez tohto by ukazoval stare cisla az do svojho dalsieho tiknutia.
+                PocasieWidgetProvider.prekresliVsetky(ctx)
+            }
+            if (!rano) {
                 // Ziadne miesto sa nestiahlo = pravdepodobne siet. Retry, nie
                 // failure: WorkManager to skusi s odstupom a nezrusi rozvrh.
-                return Result.retry()
+                return if (neuspech) Result.retry() else Result.success()
             }
-            Alerty.vyhodnot(applicationContext)
-            // Widget kresli launcher a o novych datach sa sam nedozvie —
-            // bez tohto by ukazoval stare cisla az do svojho dalsieho tiknutia.
-            PocasieWidgetProvider.prekresliVsetky(applicationContext)
+            // Zajtrajsok sa pripaja az po poslednom pokuse: kazde opakovanie
+            // spusti doWork znova a pripojilo by dalsieho.
+            if (neuspech && runAttemptCount < POKUSOV - 1) return Result.retry()
+            naplanujZajtrajsok(ctx)
             return Result.success()
         }
     }

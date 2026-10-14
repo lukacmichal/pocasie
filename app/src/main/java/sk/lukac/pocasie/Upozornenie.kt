@@ -31,6 +31,14 @@ enum class DruhUpozornenia {
 
     /** Zrazky za hodinu prekrocia hranicu v mm. */
     ZRAZKY_NAD,
+
+    /**
+     * Uhrn zrazok za kalendarny den prekroci hranicu v mm (od 23. 9. 2026).
+     *
+     * "Nad 2 mm" sa da mysliet za hodinu aj za den a su to uplne ine veci:
+     * 2 mm za hodinu je poriadny dazd, 2 mm za den mrholenie. Preto oboje.
+     */
+    ZRAZKY_DEN_NAD,
 }
 
 data class Upozornenie(
@@ -83,6 +91,14 @@ data class Zasah(
     val upozornenie: Upozornenie,
     val miesto: Miesto,
     val hodina: Hodina,
+    /**
+     * Prva hodina suvisleho useku, do ktoreho [hodina] patri — aj ked uz je
+     * minulostou. Podla nej sa pozna, ze je to ten isty mraz alebo dazd.
+     * Pri dennom uhrne je to datum dna ("2026-09-24").
+     */
+    val zaciatok: String = hodina.cas,
+    /** Pri dennom uhrne sucet zrazok za den v mm, inak null. */
+    val sucet: Double? = null,
 )
 
 object Pravidla {
@@ -96,9 +112,40 @@ object Pravidla {
      */
     fun zasah(u: Upozornenie, miesto: Miesto, p: Predpoved, odCasu: String): Zasah? {
         if (!u.zapnute || !u.jePre(miesto)) return null
+        if (u.druh == DruhUpozornenia.ZRAZKY_DEN_NAD) return zasahDna(u, miesto, p, odCasu)
         val okno = p.hodinyOd(odCasu).take(u.hodinDopredu)
         val h = okno.firstOrNull { splna(u, it) } ?: return null
-        return Zasah(u, miesto, h)
+        // Zaciatok useku sa hlada aj v uz odzitych hodinach dneska (hodinova
+        // predpoved zacina polnocou). Bez toho by mraz od 02:00 do 06:00 pri
+        // obnove o 05:00 mal "prvu hodinu" 05:00, teda novy kluc — a appka by
+        // na ten isty mraz zvonila pri kazdej obnove, kym trva (do 22. 9. 2026).
+        var i = p.hodiny.indexOfFirst { it.cas == h.cas }
+        while (i > 0 && splna(u, p.hodiny[i - 1])) i--
+        return Zasah(u, miesto, h, if (i >= 0) p.hodiny[i].cas else h.cas)
+    }
+
+    /**
+     * Prvy den v okne, ktoreho uhrn prekroci hranicu.
+     *
+     * Okno ([Upozornenie.hodinDopredu]) urcuje, KTORE dni sa sleduju — kazdy,
+     * do ktoreho zasahuje aspon jedna hodina okna. Scitava sa ale cely den,
+     * nie len jeho cast v okne: 24 h od 15:00 by zo zajtrajska videlo len
+     * dopoludnie a popoludnajsia burka by sa nerátala. Dnesok sa scita len
+     * od teraz: co uz spadlo, sa upozornit neda.
+     *
+     * Pocita sa z hodinovej predpovede, nie z denneho suctu, prave kvoli
+     * dnesku — denny sucet by v sebe mal aj ranny dazd, ktory uz prestal.
+     */
+    private fun zasahDna(u: Upozornenie, miesto: Miesto, p: Predpoved, odCasu: String): Zasah? {
+        val dni = p.hodinyOd(odCasu).take(u.hodinDopredu).map { it.den }.distinct()
+        for (den in dni) {
+            val hodiny = p.hodiny.filter { it.den == den && it.cas >= odCasu }
+            val sucet = hodiny.sumOf { it.zrazkyMm }
+            if (hodiny.isNotEmpty() && sucet > u.hranica) {
+                return Zasah(u, miesto, hodiny.first(), zaciatok = den, sucet = sucet)
+            }
+        }
+        return null
     }
 
     fun splna(u: Upozornenie, h: Hodina): Boolean = when (u.druh) {
@@ -109,15 +156,29 @@ object Pravidla {
         // Desatina milimetra je najmensia hodnota, ktoru ma zmysel hlasit.
         DruhUpozornenia.ZRAZKY_AKEKOLVEK -> h.zrazkyMm >= 0.1
         DruhUpozornenia.ZRAZKY_NAD -> h.zrazkyMm > u.hranica
+        // Denny uhrn sa neposudzuje po hodinach — viď [zasahDna].
+        DruhUpozornenia.ZRAZKY_DEN_NAD -> false
     }
+
+    /** Predvolena hranica noveho pravidla — nech pole nezacina nulou pri vsetkom. */
+    fun predvolenaHranica(druh: DruhUpozornenia): Double = when (druh) {
+        DruhUpozornenia.TEPLOTA_POD -> 0.0
+        DruhUpozornenia.TEPLOTA_NAD -> 30.0
+        DruhUpozornenia.ZRAZKY_AKEKOLVEK -> 0.0
+        DruhUpozornenia.ZRAZKY_NAD -> 1.0
+        DruhUpozornenia.ZRAZKY_DEN_NAD -> 5.0
+    }
+
+    fun jeTeplota(druh: DruhUpozornenia): Boolean =
+        druh == DruhUpozornenia.TEPLOTA_POD || druh == DruhUpozornenia.TEPLOTA_NAD
 
     /**
      * Kluc jedneho zasahu — podla neho sa pozna, ze uz bol ohlaseny.
      *
-     * Obsahuje HODINU zasahu, nie cas vyhodnotenia: to je cely rozdiel medzi
-     * "ozvem sa raz na kazdy mraz" a "ozvem sa kazde tri hodiny na ten isty
-     * mraz". Bez toho by obnova na pozadi posielala tu istu spravu dokola,
-     * kym mraz neprejde — a upozornenia by clovek vypol.
+     * Obsahuje ZACIATOK useku, nie cas vyhodnotenia ani prvu buducu hodinu:
+     * to je cely rozdiel medzi "ozvem sa raz na kazdy mraz" a "ozvem sa kazde
+     * tri hodiny na ten isty mraz". Bez toho by obnova na pozadi posielala tu
+     * istu spravu dokola, kym mraz neprejde — a upozornenia by clovek vypol.
      */
-    fun kluc(z: Zasah): String = "${z.upozornenie.id}|${z.miesto.id}|${z.hodina.cas}"
+    fun kluc(z: Zasah): String = "${z.upozornenie.id}|${z.miesto.id}|${z.zaciatok}"
 }

@@ -93,13 +93,28 @@ class UpozorneniaActivity : ZakladActivity() {
     /** Popis pravidla do zoznamu — vzdy s hodnotou, nikdy len „teplota". */
     private fun popis(u: Upozornenie): String = when (u.druh) {
         DruhUpozornenia.TEPLOTA_POD ->
-            "${getString(R.string.upoz_teplota_pod)} ${Format.teplota(u.hranica)} °C"
+            "${getString(R.string.upoz_teplota_pod)} ${Format.hranica(u.hranica)} °C"
         DruhUpozornenia.TEPLOTA_NAD ->
-            "${getString(R.string.upoz_teplota_nad)} ${Format.teplota(u.hranica)} °C"
+            "${getString(R.string.upoz_teplota_nad)} ${Format.hranica(u.hranica)} °C"
         DruhUpozornenia.ZRAZKY_AKEKOLVEK -> getString(R.string.upoz_zrazky_ake)
         DruhUpozornenia.ZRAZKY_NAD ->
-            "${getString(R.string.upoz_zrazky_nad)} ${Format.zrazky(u.hranica)} mm/h"
+            "${getString(R.string.upoz_zrazky_nad)} ${Format.hranica(u.hranica)} mm"
+        DruhUpozornenia.ZRAZKY_DEN_NAD ->
+            "${getString(R.string.upoz_zrazky_den)} ${Format.hranica(u.hranica)} mm"
     }
+
+    /** Popis poľa hranice s jednotkou — samotné „Hranica" nepovie, či stupne alebo mm. */
+    private fun textHranice(druh: DruhUpozornenia): String = getString(when (druh) {
+        DruhUpozornenia.TEPLOTA_POD, DruhUpozornenia.TEPLOTA_NAD -> R.string.upoz_hranica_c
+        DruhUpozornenia.ZRAZKY_DEN_NAD -> R.string.upoz_hranica_mm_den
+        else -> R.string.upoz_hranica_mm_h
+    })
+
+    private fun napovedaHranice(druh: DruhUpozornenia): String = getString(when (druh) {
+        DruhUpozornenia.TEPLOTA_POD, DruhUpozornenia.TEPLOTA_NAD -> R.string.upoz_hint_teplota
+        DruhUpozornenia.ZRAZKY_DEN_NAD -> R.string.upoz_hint_zrazky_den
+        else -> R.string.upoz_hint_zrazky_h
+    })
 
     private fun kde(u: Upozornenie): String {
         val miesto = Prefs.miesta(this).firstOrNull { it.id == u.miestoId }
@@ -116,6 +131,7 @@ class UpozorneniaActivity : ZakladActivity() {
             DruhUpozornenia.TEPLOTA_NAD to getString(R.string.upoz_teplota_nad),
             DruhUpozornenia.ZRAZKY_AKEKOLVEK to getString(R.string.upoz_zrazky_ake),
             DruhUpozornenia.ZRAZKY_NAD to getString(R.string.upoz_zrazky_nad),
+            DruhUpozornenia.ZRAZKY_DEN_NAD to getString(R.string.upoz_zrazky_den),
         )
 
         val telo = LinearLayout(this).apply {
@@ -137,13 +153,22 @@ class UpozorneniaActivity : ZakladActivity() {
         telo.addView(vyberDruhu)
 
         val popisHranice = nadpis(getString(R.string.upoz_hranica))
+        // `Format.hranica`, nie `teplota`: tá zaokrúhľuje na celé stupne, takže
+        // pri úprave pravidla sa -2,5 °C aj 0,5 mm ticho uložilo ako celé číslo.
+        val zaciatocnyDruh = existujuce?.druh ?: druhy.first().first
         val poleHranice = EditText(this).apply {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or
                 android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL or
                 android.text.InputType.TYPE_NUMBER_FLAG_SIGNED
-            setText(existujuce?.hranica?.let { Format.teplota(it) } ?: "0")
+            setText(Format.hranica(existujuce?.hranica
+                ?: Pravidla.predvolenaHranica(zaciatocnyDruh)))
         }
         telo.addView(poleHranice)
+        val napoveda = TextView(this).apply {
+            textSize = 12f
+            setPadding(0, 4, 0, 0)
+        }
+        telo.addView(napoveda)
 
         nadpis(getString(R.string.upoz_miesto))
         val vyberMiesta = Spinner(this).apply {
@@ -173,11 +198,24 @@ class UpozorneniaActivity : ZakladActivity() {
 
         // Pri „akékoľvek zrážky" hranica nemá čo znamenať — schová sa aj
         // s popisom, aby sa nedala vyplniť hodnota, ktorá nič nespraví.
+        // Pri zmene druhu sa predvolená hranica vymení za predvolenú nového
+        // druhu (0 °C → 1 mm), ale hodnota, ktorú človek napísal, ostane.
+        var predosly = zaciatocnyDruh
         fun prepniHranicu() {
             val druh = druhy[vyberDruhu.selectedItemPosition].first
             val viditelna = druh != DruhUpozornenia.ZRAZKY_AKEKOLVEK
             popisHranice.visibility = if (viditelna) View.VISIBLE else View.GONE
             poleHranice.visibility = if (viditelna) View.VISIBLE else View.GONE
+            napoveda.visibility = if (viditelna) View.VISIBLE else View.GONE
+            popisHranice.text = textHranice(druh)
+            napoveda.text = napovedaHranice(druh)
+            val napisane = poleHranice.text.toString()
+            if (druh != predosly &&
+                (napisane.isBlank() || napisane == Format.hranica(Pravidla.predvolenaHranica(predosly)))
+            ) {
+                poleHranice.setText(Format.hranica(Pravidla.predvolenaHranica(druh)))
+            }
+            predosly = druh
         }
         vyberDruhu.onItemSelectedListener =
             object : android.widget.AdapterView.OnItemSelectedListener {
@@ -198,6 +236,12 @@ class UpozorneniaActivity : ZakladActivity() {
                 if (druh != DruhUpozornenia.ZRAZKY_AKEKOLVEK && hranica == null) {
                     android.widget.Toast.makeText(
                         this, R.string.upoz_zla_hranica,
+                        android.widget.Toast.LENGTH_LONG).show()
+                    return@setPositiveButton
+                }
+                if (!Pravidla.jeTeplota(druh) && (hranica ?: 0.0) < 0.0) {
+                    android.widget.Toast.makeText(
+                        this, R.string.upoz_zaporne_zrazky,
                         android.widget.Toast.LENGTH_LONG).show()
                     return@setPositiveButton
                 }

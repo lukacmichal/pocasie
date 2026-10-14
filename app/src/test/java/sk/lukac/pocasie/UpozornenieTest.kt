@@ -126,6 +126,40 @@ class UpozornenieTest {
     }
 
     @Test
+    fun `ten isty mraz sa pri obnove pocas neho neohlasi znova`() {
+        // Mraz 02:00-06:00. Obnova o 20:00 najde prvu hodinu 02:00, obnova
+        // o 05:00 uz 05:00 — do 22. 9. 2026 to bol novy kluc a druhe
+        // upozornenie na ten isty mraz.
+        val p = predpoved(
+            hodina("2026-09-04T01:00", 1.0),
+            hodina("2026-09-04T02:00", -1.0),
+            hodina("2026-09-04T03:00", -2.0),
+            hodina("2026-09-04T04:00", -2.5),
+            hodina("2026-09-04T05:00", -2.0),
+            hodina("2026-09-04T06:00", -0.5),
+            hodina("2026-09-04T07:00", 2.0),
+        )
+        val u = Upozornenie("u1", DruhUpozornenia.TEPLOTA_POD, hranica = 0.0)
+        val vecer = Pravidla.zasah(u, nitra, p, "2026-09-04T01:00")!!
+        val rano = Pravidla.zasah(u, nitra, p, "2026-09-04T05:00")!!
+        assertEquals("2026-09-04T05:00", rano.hodina.cas)   // text ukazuje buducu hodinu
+        assertEquals(Pravidla.kluc(vecer), Pravidla.kluc(rano))
+    }
+
+    @Test
+    fun `novy dazd po prestavke je nova sprava`() {
+        val p = predpoved(
+            hodina("2026-09-04T10:00", 12.0, mm = 1.0),
+            hodina("2026-09-04T11:00", 12.0, mm = 0.0),
+            hodina("2026-09-04T12:00", 12.0, mm = 2.0),
+        )
+        val u = Upozornenie("u1", DruhUpozornenia.ZRAZKY_AKEKOLVEK)
+        val prvy = Pravidla.zasah(u, nitra, p, "2026-09-04T10:00")!!
+        val druhy = Pravidla.zasah(u, nitra, p, "2026-09-04T11:00")!!
+        assertTrue(Pravidla.kluc(prvy) != Pravidla.kluc(druhy))
+    }
+
+    @Test
     fun `kluc rozlisi miesta aj pravidla`() {
         val p = predpoved(hodina("2026-09-04T05:00", -2.0))
         val a = Upozornenie("u1", DruhUpozornenia.TEPLOTA_POD, hranica = 0.0)
@@ -156,6 +190,62 @@ class UpozornenieTest {
         val nacitane = Upozornenie.zoZoznamu(json)
         assertEquals(1, nacitane.size)
         assertEquals("u1", nacitane[0].id)
+    }
+
+    // ───────────────────── zrážky za deň ───────────────────────────────────
+
+    @Test
+    fun `denny uhrn zrata cely zajtrajsok, aj za hranicou okna`() {
+        // 24 h od 15:00 siaha do 15:00 zajtra; popoludnajsia burka zajtra
+        // sa napriek tomu ráta — sleduje sa den, nie jeho kus.
+        val p = predpoved(
+            hodina("2026-09-23T15:00", 15.0, mm = 0.0),
+            hodina("2026-09-24T10:00", 15.0, mm = 1.0),
+            hodina("2026-09-24T18:00", 15.0, mm = 4.5),
+        )
+        val u = Upozornenie("u1", DruhUpozornenia.ZRAZKY_DEN_NAD, hranica = 5.0, hodinDopredu = 20)
+        val z = Pravidla.zasah(u, nitra, p, "2026-09-23T15:00")!!
+        assertEquals("2026-09-24", z.zaciatok)
+        assertEquals(5.5, z.sucet!!, 1e-9)
+    }
+
+    @Test
+    fun `dnesok sa pri dennom uhrne rata len od teraz`() {
+        // Ranny dazd, ktory uz prestal, sa upozornit neda.
+        val p = predpoved(
+            hodina("2026-09-23T06:00", 12.0, mm = 8.0),
+            hodina("2026-09-23T15:00", 15.0, mm = 0.5),
+        )
+        val u = Upozornenie("u1", DruhUpozornenia.ZRAZKY_DEN_NAD, hranica = 5.0)
+        assertNull(Pravidla.zasah(u, nitra, p, "2026-09-23T15:00"))
+    }
+
+    @Test
+    fun `denny uhrn sa ohlasi raz za den`() {
+        val p = predpoved(
+            hodina("2026-09-24T08:00", 12.0, mm = 3.0),
+            hodina("2026-09-24T12:00", 12.0, mm = 3.0),
+        )
+        val u = Upozornenie("u1", DruhUpozornenia.ZRAZKY_DEN_NAD, hranica = 5.0)
+        val vecer = Pravidla.zasah(u, nitra, p, "2026-09-23T20:00")!!
+        val rano = Pravidla.zasah(u, nitra, p, "2026-09-24T08:00")!!
+        assertEquals(Pravidla.kluc(vecer), Pravidla.kluc(rano))
+    }
+
+    @Test
+    fun `hranica sa ukaze tak, ako bola zadana`() {
+        // teplota() by -2,5 zaokruhlila na -3 a pri uprave pravidla tak aj ulozila.
+        assertEquals("-2,5", Format.hranica(-2.5))
+        assertEquals("30", Format.hranica(30.0))
+        assertEquals("0,5", Format.hranica(0.5))
+        assertEquals("0", Format.hranica(0.0))
+    }
+
+    @Test
+    fun `novy druh sa ulozi a nacita`() {
+        val u = Upozornenie("u9", DruhUpozornenia.ZRAZKY_DEN_NAD, hranica = 7.5)
+        val spat = Upozornenie.zoZoznamu(Upozornenie.doZoznamu(listOf(u)))
+        assertEquals(listOf(u), spat)
     }
 
     // ─────────────────── "teraz" je čas MIESTA ──────────────────────────────

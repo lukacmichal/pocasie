@@ -29,7 +29,6 @@ class NastaveniaActivity : ZakladActivity() {
 
     private lateinit var obnovaZapnuta: CheckBox
     private lateinit var obnovaHodin: NastaveniaForm.Krokovac
-    private lateinit var lenWifi: CheckBox
     private lateinit var rannaObnova: CheckBox
     private lateinit var rannaHodina: NastaveniaForm.Krokovac
     private lateinit var otvorenieNaDatach: CheckBox
@@ -66,9 +65,7 @@ class NastaveniaActivity : ZakladActivity() {
             getString(R.string.n_obnova_zapnuta), Prefs.obnovaZapnuta(this))
         obnovaHodin = f.krokovac(
             getString(R.string.n_obnova_hodin), Prefs.obnovaHodin(this), 1, 24) { "$it h" }
-        lenWifi = f.zaskrtavatko(
-            getString(R.string.n_len_wifi), Prefs.lenWifi(this),
-            getString(R.string.n_len_wifi_popis))
+        f.odstavec(getString(R.string.n_len_wifi_popis))
         rannaObnova = f.zaskrtavatko(
             getString(R.string.n_rano), Prefs.rannaObnova(this),
             getString(R.string.n_rano_popis))
@@ -194,7 +191,6 @@ class NastaveniaActivity : ZakladActivity() {
 
         Prefs.nastavObnovu(this, obnovaZapnuta.isChecked)
         Prefs.nastavObnovuHodin(this, obnovaHodin.hodnota)
-        Prefs.nastavLenWifi(this, lenWifi.isChecked)
         Prefs.nastavRannuObnovu(this, rannaObnova.isChecked)
         Prefs.nastavRannuHodinu(this, rannaHodina.hodnota)
         Prefs.nastavOtvorenieNaDatach(this, otvorenieNaDatach.isChecked)

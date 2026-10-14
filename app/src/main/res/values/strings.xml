@@ -71,8 +71,16 @@
     <string name="upoz_teplota_pod">Teplota klesne pod</string>
     <string name="upoz_teplota_nad">Teplota stúpne nad</string>
     <string name="upoz_zrazky_ake">Budú zrážky (akékoľvek)</string>
-    <string name="upoz_zrazky_nad">Zrážky prekročia</string>
+    <string name="upoz_zrazky_nad">Zrážky za hodinu prekročia</string>
+    <string name="upoz_zrazky_den">Zrážky za deň prekročia</string>
     <string name="upoz_hranica">Hranica</string>
+    <string name="upoz_hranica_c">Hranica v °C</string>
+    <string name="upoz_hranica_mm_h">Hranica v mm za hodinu</string>
+    <string name="upoz_hranica_mm_den">Hranica v mm za deň</string>
+    <string name="upoz_hint_teplota">Dá sa zadať aj s desatinou, napr. -2,5. Na príliš teplo aj príliš zimu pridaj dve pravidlá — jedno „klesne pod“, druhé „stúpne nad“.</string>
+    <string name="upoz_hint_zrazky_h">Do 2,5 mm za hodinu je slabý dážď, nad 7,5 mm silný. Sneh sa ráta ako voda z neho — podľa Open-Meteo je 7 cm snehu zhruba 10 mm.</string>
+    <string name="upoz_hint_zrazky_den">Súčet za celý deň (dnes len od teraz ďalej). Okolo 5 mm je daždivý deň, nad 20 mm výdatný dážď. Sneh sa ráta ako voda z neho.</string>
+    <string name="upoz_zaporne_zrazky">Zrážky nemôžu byť záporné.</string>
     <string name="upoz_dopredu">Koľko hodín dopredu sledovať</string>
     <string name="upoz_hodin">%1$d h</string>
     <string name="upoz_ulozit">Uložiť</string>
@@ -86,6 +94,8 @@
     <string name="notif_teplota_pod">%1$s: %2$s °C o %3$s (pod %4$s °C)</string>
     <string name="notif_teplota_nad">%1$s: %2$s °C o %3$s (nad %4$s °C)</string>
     <string name="notif_zrazky">%1$s: %2$s mm o %3$s</string>
+    <string name="notif_zrazky_nad">%1$s: %2$s mm za hodinu o %3$s (nad %4$s mm)</string>
+    <string name="notif_zrazky_den">%1$s: %2$s mm zrážok %3$s (nad %4$s mm za deň)</string>
 
     <!-- ============ widget ============ -->
     <string name="widget_popis">Počasie pre tvoje miesta s grafom na 24 h. Roluje sa prstom, sám na sieť nechodí.</string>
@@ -101,8 +111,7 @@
     <string name="n_obnova">Obnova na pozadí</string>
     <string name="n_obnova_zapnuta">Sťahovať predpoveď aj keď je appka zavretá</string>
     <string name="n_obnova_hodin">Ako často (hodín)</string>
-    <string name="n_len_wifi">Len na Wi-Fi</string>
-    <string name="n_len_wifi_popis">Zapnuté = na mobilných dátach sa nesťahuje vôbec. Predpoveď sa vtedy obnoví, až keď appku otvoríš.</string>
+    <string name="n_len_wifi_popis">Na pozadí sa sťahuje len cez Wi-Fi. Na mobilných dátach sa nesťahuje nič — predpoveď sa vtedy obnoví, až keď appku otvoríš.</string>
     <string name="n_rano">Stiahnuť ráno cez Wi-Fi</string>
     <string name="n_rano_popis">Zapnuté = raz denne o zvolenej hodine sa stiahne najnovšia predpoveď, ale výhradne cez Wi-Fi. Keď v tú hodinu Wi-Fi nie je, sťahovanie počká na najbližšiu — cez mobilné dáta sa nespustí nikdy. Už stiahnutá predpoveď medzitým platí ďalej a nezmaže sa.</string>
     <string name="n_rano_hodina">O ktorej hodine</string>

@@ -63,8 +63,10 @@ android {
         // po 1–12 h (24 h po dvoch, tyzden po dvanast), zvisle ciary na tych
         // istych hodinach, vyraznejsie hranice dni a vodorovne ciary teploty
         // po 1/2/5/10 °C podla vysky. Dovtedy pevne kazdych 6 h a tri ciary.
-        versionCode = 9
-        versionName = "1.8"
+        // 1.11 (12) — ANDROID-5: na pozadi vsetko len po Wi-Fi (volba „Len na
+        // Wi-Fi" zmizla) a ranne stiahnutie drzi 6:00 aj po dni bez Wi-Fi.
+        versionCode = 12
+        versionName = "1.11"
 
         buildConfigField("String", "NAS_HOST", nasField("NAS_HOST"))
         buildConfigField("String", "NAS_SHARE", nasField("NAS_SHARE"))

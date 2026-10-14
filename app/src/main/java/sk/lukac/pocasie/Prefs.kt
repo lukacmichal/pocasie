@@ -30,6 +30,7 @@ object Prefs {
     private const val K_RANO = "ranna_obnova"
     private const val K_RANO_HODINA = "ranna_hodina"
     private const val K_RANO_ROZVRH = "ranny_rozvrh"
+    private const val K_SIESTA = "siesta_nastavena"
     private const val K_DNI = "dni"
     private const val K_HODINOVKA = "hodinovka"
 
@@ -137,11 +138,22 @@ object Prefs {
     fun nastavObnovuHodin(ctx: Context, h: Int) =
         sp(ctx).edit().putInt(K_OBNOVA_HODIN, h.coerceIn(1, 24)).apply()
 
-    /** Predvolene ZAPNUTE: slub „na mobilnych datach nic" sa lepsie rusi
-     *  vedome, nez sa objavuje prekvapenie na fakture. */
-    fun lenWifi(ctx: Context): Boolean = sp(ctx).getBoolean(K_LEN_WIFI, true)
-    fun nastavLenWifi(ctx: Context, v: Boolean) =
-        sp(ctx).edit().putBoolean(K_LEN_WIFI, v).apply()
+    /**
+     * Raz po aktualizacii zapne rannu obnovu o 6:00 (ANDROID-5, „nech sa to
+     * spusta vsade o 6:00"). Nova predvolba by na telefone s ulozenou inou
+     * hodinou nezmenila nic; potom uz plati, co si clovek nastavi. Uprace aj
+     * byvalu volbu „Len na Wi-Fi" — mobilne data na pozadi uz nie su na vyber.
+     */
+    fun nastavSiestuRaz(ctx: Context) {
+        val s = sp(ctx)
+        if (s.getBoolean(K_SIESTA, false)) return
+        s.edit()
+            .putBoolean(K_RANO, true)
+            .putInt(K_RANO_HODINA, 6)
+            .remove(K_LEN_WIFI)
+            .putBoolean(K_SIESTA, true)
+            .apply()
+    }
 
     /**
      * Stiahnut raz denne o pevnej hodine (predvolene 6:00) — VZDY len po Wi-Fi.
@@ -151,10 +163,7 @@ object Prefs {
      * s predpovedou, ktora uz vie o hodinu menej. Toto je poistka na rano: kym
      * je telefon doma na nabijacke, stiahne sa to najnovsie.
      *
-     * [lenWifi] sa na to NEVZTAHUJE zamerne. Ten je vypinac pre intervalovu
-     * obnovu, kde si clovek moze mobilne data vedome povolit; ranne stiahnutie
-     * je zo svojej podstaty „sprav to, kym som doma na Wi-Fi" a na mobilnych
-     * datach nema co robit.
+     * Rovnako ako intervalova obnova ide len po Wi-Fi (ANDROID-5).
      */
     fun rannaObnova(ctx: Context): Boolean = sp(ctx).getBoolean(K_RANO, true)
     fun nastavRannuObnovu(ctx: Context, v: Boolean) =
@@ -194,9 +203,9 @@ object Prefs {
      * stahuje vylucne tlacidlo ↻ alebo potiahnutie zoznamu; na Wi-Fi sa
      * spravanie nemeni.
      *
-     * S [lenWifi] sa to nebije: ten sa tyka obnovy NA POZADI, tento otvorenia
-     * appky. Su to dve rozne cesty k tomu istemu prenosu a kazda ma vlastny
-     * vypinac.
+     * Obnovy NA POZADI sa to netyka: tie idu od ANDROID-5 vzdy len po Wi-Fi
+     * a vypinac na mobilne data nemaju. Toto je otvorenie appky, teda
+     * cesta, ktoru spusta clovek.
      */
     fun otvorenieNaDatach(ctx: Context): Boolean =
         sp(ctx).getBoolean(K_OTVORENIE_NA_DATACH, false)

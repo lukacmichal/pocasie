@@ -107,14 +107,25 @@ object Alerty {
             DruhUpozornenia.TEPLOTA_POD -> ctx.getString(
                 R.string.notif_teplota_pod, z.miesto.nazov,
                 Format.teplota(z.hodina.teplota), h,
-                Format.teplota(z.upozornenie.hranica))
+                Format.hranica(z.upozornenie.hranica))
             DruhUpozornenia.TEPLOTA_NAD -> ctx.getString(
                 R.string.notif_teplota_nad, z.miesto.nazov,
                 Format.teplota(z.hodina.teplota), h,
-                Format.teplota(z.upozornenie.hranica))
-            DruhUpozornenia.ZRAZKY_AKEKOLVEK, DruhUpozornenia.ZRAZKY_NAD ->
+                Format.hranica(z.upozornenie.hranica))
+            DruhUpozornenia.ZRAZKY_AKEKOLVEK ->
                 ctx.getString(R.string.notif_zrazky, z.miesto.nazov,
                               Format.zrazky(z.hodina.zrazkyMm), h)
+            DruhUpozornenia.ZRAZKY_NAD ->
+                ctx.getString(R.string.notif_zrazky_nad, z.miesto.nazov,
+                              Format.zrazky(z.hodina.zrazkyMm), h,
+                              Format.hranica(z.upozornenie.hranica))
+            // Den slovom aj datumom ("St 24.9."): pri dennom uhrne hodina nic
+            // nepovie, dolezite je, KTORY den treba dazdnik.
+            DruhUpozornenia.ZRAZKY_DEN_NAD ->
+                ctx.getString(R.string.notif_zrazky_den, z.miesto.nazov,
+                              Format.zrazky(z.sucet ?: 0.0),
+                              "${Format.denVTyzdni(z.zaciatok)} ${Format.denKratko(z.zaciatok)}",
+                              Format.hranica(z.upozornenie.hranica))
         }
     }
 }
