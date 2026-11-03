@@ -30,18 +30,13 @@ import java.net.URLEncoder
  *     3 dni bez hodinovky   361 B     (753 B nekomprimovane)
  *
  * Pri styroch miestach a obnove kazde 3 hodiny je to ~1,3 MB mesacne
- * s hodinovkou a ~0,35 MB bez nej. Pocitadlo v Nastaveniach rata
- * NEKOMPRIMOVANU velkost — je to horny odhad, nie prikraslenie.
+ * s hodinovkou a ~0,35 MB bez nej (len telo odpovede; pocitadlo
+ * v Nastaveniach ukazuje cely prenos tak, ako ho rata Android).
  */
 object OpenMeteo {
 
     private const val PREDPOVED = "https://api.open-meteo.com/v1/forecast"
     private const val GEOKODOVANIE = "https://geocoding-api.open-meteo.com/v1/search"
-
-    /** Kolko bajtov sa doteraz prenieslo — cita to obrazovka Nastaveni. */
-    @Volatile
-    var poslednyPrenosBajtov: Int = 0
-        private set
 
     class ChybaSiete(sprava: String) : Exception(sprava)
 
@@ -103,9 +98,7 @@ object OpenMeteo {
             if (kod !in 200..299) {
                 throw ChybaSiete("HTTP $kod")
             }
-            val telo = spojenie.inputStream.bufferedReader().use { it.readText() }
-            poslednyPrenosBajtov = telo.toByteArray().size
-            return telo
+            return spojenie.inputStream.bufferedReader().use { it.readText() }
         } catch (e: ChybaSiete) {
             throw e
         } catch (e: Exception) {

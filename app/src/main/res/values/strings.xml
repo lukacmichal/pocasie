@@ -36,6 +36,7 @@
     <string name="zrazky_mm_h">%1$s mm/h</string>
     <string name="zrazky_mm_den">%1$s mm/deň</string>
     <string name="zrazky_dnes">dnes %1$s mm</string>
+    <string name="zrazky_este">dnes ešte %1$s mm</string>
     <string name="bez_zrazok">dnes bez zrážok</string>
     <string name="aktualizovane">%1$s</string>
     <string name="stare_udaje">staré %1$s</string>

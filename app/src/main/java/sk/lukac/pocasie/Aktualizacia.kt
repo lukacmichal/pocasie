@@ -122,10 +122,6 @@ object Aktualizacia {
         vlakno.execute {
             val ciel = ApkInstaller.downloadTarget(a, cfg.apkFileName)
             val apk = runCatching { SmbUpdater.download(cfg, ciel) }.getOrNull()
-            // Najvacsi jednorazovy prenos, aky appka spravi. Keby sa neratal,
-            // pocitadlo by ukazovalo kilobajty predpovedi a mlcalo o osmich
-            // megabajtoch APK.
-            if (apk != null) Prenos.zapis(a, apk.length())
             hlavne.post {
                 if (a.isFinishing || a.isDestroyed) return@post
                 when {

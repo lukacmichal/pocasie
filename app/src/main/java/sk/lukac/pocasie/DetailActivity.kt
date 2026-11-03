@@ -60,7 +60,7 @@ class DetailActivity : ZakladActivity() {
         // nepovedia a len by odsunuli tie podstatne mimo obrazovku. Cas berie
         // zo `current.time`, teda zo zony MIESTA; hodinova predpoved zacina
         // polnocou a jej prva polozka by o dnesnom vecere ukazala rano.
-        val odteraz = p?.odkedyDopredu.orEmpty()
+        val odteraz = p?.odkedyDopreduV(System.currentTimeMillis()).orEmpty()
         vsetkyHodiny = p?.hodinyOd(odteraz).orEmpty()
         // Pasik ukazuje 48 h, graf tolko, kolko si clovek vyberie pod nim.
         // Pasik sa cita po jednej hodine a stodvadsat stlpcekov by sa nim

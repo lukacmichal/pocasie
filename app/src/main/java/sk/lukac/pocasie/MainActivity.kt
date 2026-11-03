@@ -89,8 +89,8 @@ class MainActivity : ZakladActivity() {
         // kto je zvyknuty ho stlacit, dostane vysledok hned a nie o 400 ms.
         //
         // Preco odklad a nie dopyt na kazde pismeno: geokodovanie je prenos ako
-        // kazdy iny (rata sa do pocitadla dat) a "Bratislava" by inak stalo
-        // desat dopytov namiesto jedneho. 400 ms je kratsie, nez trva napisat
+        // kazdy iny a "Bratislava" by inak stalo desat dopytov namiesto
+        // jedneho. 400 ms je kratsie, nez trva napisat
         // dalsie pismeno, takze sa to na obrazovke neprejavi.
         poleHladania.setOnEditorActionListener { _, _, _ ->
             hlavne.removeCallbacks(odlozeneHladanie)
@@ -192,10 +192,6 @@ class MainActivity : ZakladActivity() {
         stavHladania.text = getString(R.string.hladam)
         vlakno.execute {
             val najdene = runCatching { OpenMeteo.najdiMiesta(vyraz) }.getOrDefault(emptyList())
-            // Geokodovanie je tiez prenos. Bez tohto by pocitadlo tvrdilo, ze
-            // appka nestiahla nic, a pritom by za hladanim jedneho mesta bolo
-            // pat dopytov (jeden na kazde stlacenie klavesy).
-            Prenos.zapis(this, OpenMeteo.poslednyPrenosBajtov.toLong())
             hlavne.post {
                 // Clovek medzitym dopisal dalsie pismeno? Potom tato odpoved
                 // patri k inemu vyrazu a zobrazit ju znamena ukazat navrhy,
@@ -255,10 +251,10 @@ class MainActivity : ZakladActivity() {
         override fun onBindViewHolder(d: Drzitel, i: Int) {
             val (m, p) = polozky[i]
             d.nazov.text = m.nazov
-            d.teplota.text = getString(R.string.teplota,
-                Format.teplota(p?.teplotaTeraz ?: p?.dnes?.maxTeplota))
+            val teraz = System.currentTimeMillis()
+            d.teplota.text = getString(R.string.teplota, Format.teplota(p?.teplotaV(teraz)))
 
-            val dnes = p?.dnes
+            val dnes = p?.dnesV(teraz)
             d.rozsah.text = if (dnes == null) "" else getString(
                 R.string.rozsah_dna,
                 Format.teplota(dnes.minTeplota), Format.teplota(dnes.maxTeplota))

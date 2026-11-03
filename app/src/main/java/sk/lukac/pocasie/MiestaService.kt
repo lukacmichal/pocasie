@@ -3,6 +3,8 @@ package sk.lukac.pocasie
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
@@ -89,7 +91,10 @@ class MiestaFactory(
 
         val faktor = Vzhlad.faktorWidgetu(ctx)
         val pred = p.predpoved
-        val dnes = pred?.dnes
+        // Cas pohladu, nie stiahnutia: widget sa prekresluje kazdych 30 min
+        // aj bez siete a „teraz" sa ma posuvat po hodinovke.
+        val teraz = System.currentTimeMillis()
+        val dnes = pred?.dnesV(teraz)
 
         // ── prvy riadok: nazov · teplota ─────────────────────────────────
         v.setTextViewText(R.id.b_miesto, p.miesto.nazov)
@@ -103,7 +108,7 @@ class MiestaFactory(
             R.id.b_teplota,
             // Pomlcka, nie prazdno: „este nemam predpoved" ma byt vidiet.
             if (pred == null) ctx.getString(R.string.ver_none)
-            else Format.teplota(pred.teplotaTeraz ?: dnes?.maxTeplota),
+            else Format.teplota(pred.teplotaV(teraz)),
         )
         v.setTextViewTextSize(R.id.b_teplota, TypedValue.COMPLEX_UNIT_SP, SP_TEPLOTA * faktor)
         v.setTextColor(R.id.b_teplota, if (pred == null) tlmena else hlavna)
@@ -119,10 +124,11 @@ class MiestaFactory(
         v.setTextColor(R.id.b_rozsah, tlmena)
 
         // Zrazky sa ukazuju, LEN ked su. „0 mm" na kazdom riadku by bol sum,
-        // v ktorom by sa tie dva dazdive dni stratili.
-        val mm = dnes?.zrazkyMm ?: 0.0
+        // v ktorom by sa tie dva dazdive dni stratili. A len tie, co este
+        // pridu: ranny dazd vecer do widgetu nepatri.
+        val mm = pred?.zrazkyEsteDnes(teraz) ?: 0.0
         val zrazkyText = if (mm >= 0.1)
-            ctx.getString(R.string.zrazky_dnes, Format.zrazky(mm)) else ""
+            ctx.getString(R.string.zrazky_este, Format.zrazky(mm)) else ""
         v.setViewVisibility(R.id.b_zrazky, if (zrazkyText.isEmpty()) View.GONE else View.VISIBLE)
         if (zrazkyText.isNotEmpty()) {
             v.setTextViewText(R.id.b_zrazky, zrazkyText)
@@ -136,7 +142,7 @@ class MiestaFactory(
         // bude dnes a ci brat dazdnik" je otazka, kvoli ktorej je widget na
         // ploche. Kresli sa z hodinovky; ked je v Nastaveniach vypnuta,
         // graf zmizne (prazdny obdlznik vyzera ako chyba).
-        val hodiny = pred?.hodinyOd(pred.odkedyDopredu).orEmpty()
+        val hodiny = pred?.hodinyOd(pred.odkedyDopreduV(teraz)).orEmpty()
         val stlpce = Graf.zHodin(hodiny, Graf.HODIN_WIDGET)
         val obrazok = GrafObrazok.vytvor(
             ctx, stlpce, sirkaGrafuPx(), vyskaGrafuPx(), faktor)
@@ -164,9 +170,13 @@ class MiestaFactory(
      */
     private fun sirkaGrafuPx(): Int {
         val metriky = ctx.resources.displayMetrics
-        val sirkaDp = if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) 0
-        else AppWidgetManager.getInstance(ctx).getAppWidgetOptions(widgetId)
-            .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+        val sirkaDp = moznosti()?.let {
+            VelkostWidgetu.sirkaDp(
+                it.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0),
+                it.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0),
+                naVysku(),
+            )
+        } ?: 0
         val px = if (sirkaDp > 0) ((sirkaDp - ODSADENIE_DP) * metriky.density).toInt()
                  else metriky.widthPixels
         return px.coerceAtLeast((120 * metriky.density).toInt())
@@ -200,12 +210,24 @@ class MiestaFactory(
      * nehlasi (stary launcher), vtedy sa graf drzi predvolenej vysky.
      */
     private fun volnaVyskaDp(): Int {
-        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return 0
-        val vyskaDp = AppWidgetManager.getInstance(ctx).getAppWidgetOptions(widgetId)
-            .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+        val m = moznosti() ?: return 0
+        val vyskaDp = VelkostWidgetu.vyskaDp(
+            m.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0),
+            m.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0),
+            naVysku(),
+        )
         if (vyskaDp <= 0) return 0
         return (vyskaDp - HLAVICKA_DP - ODSADENIE_DP).coerceAtLeast(0)
     }
+
+    /** Rozmery od launchera; null, ked factory nevie, ktory widget kresli. */
+    private fun moznosti(): Bundle? =
+        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) null
+        else AppWidgetManager.getInstance(ctx).getAppWidgetOptions(widgetId)
+
+    /** Plocha na vysku? Rozhoduje, ktora z hodnot launchera plati ([VelkostWidgetu]). */
+    private fun naVysku(): Boolean =
+        ctx.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
 
     private companion object {
         /** Vodorovne odsadenie widgetu (2× padding korena). */

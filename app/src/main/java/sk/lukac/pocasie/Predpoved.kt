@@ -110,7 +110,78 @@ data class Predpoved(
     /** Hodiny od `odCasu` (vratane) dalej — na vyhodnotenie upozorneni. */
     fun hodinyOd(odCasu: String): List<Hodina> = hodiny.filter { it.cas >= odCasu }
 
+    /**
+     * Kolko je hodin V MIESTE prave teraz ("2026-10-22T21:40").
+     *
+     * [casTeraz] je cas STIAHNUTIA, nie teraz. Do 1.12 sa z neho brala aj
+     * „aktualna" teplota, takze widget ukazoval teplotu z chvile stiahnutia:
+     * stiahnute o 14:00 pri 20 °C, vecer stale 20 °C, kym nepriniesla nove
+     * data Wi-Fi (staznost 22. 10. 2026 — widget 20 °C, vonku ovela menej).
+     *
+     * Posun sa pripocita k casu miesta, nie prepocita cez zonu telefonu —
+     * z rovnakeho dovodu ako pri [casTeraz]. Zmena casu medzi stiahnutim
+     * a pohladom posunie vysledok o hodinu; s tym sa da zit.
+     */
+    fun casMiesta(teraz: Long): String? {
+        val pri = casTeraz ?: return null
+        return runCatching {
+            java.time.LocalDateTime.parse(pri)
+                .plus(java.time.Duration.ofMillis((teraz - stiahnuteMs).coerceAtLeast(0)))
+                .toString().take(16)
+        }.getOrNull()
+    }
+
+    /**
+     * Od ktorej hodiny citat dopredu V CASE POHLADU — [odkedyDopredu]
+     * posunute o to, kolko preslo od stiahnutia.
+     */
+    fun odkedyDopreduV(teraz: Long): String =
+        casMiesta(teraz)?.let { it.take(13) + ":00" } ?: odkedyDopredu
+
+    /**
+     * Teplota, ktoru ukazat ako „teraz".
+     *
+     * Kym je stiahnutie mladsie nez hodina, plati namerany stav z `current`.
+     * Potom sa berie hodinova predpoved pre aktualnu hodinu — predpoved na
+     * teraz je blizsie pravde nez meranie spred styroch hodin. Bez hodinovky
+     * (vypnuta v Nastaveniach) ostava `current`; denne maximum je az uplne
+     * posledna moznost.
+     */
+    fun teplotaV(teraz: Long): Double? {
+        if (teraz - stiahnuteMs >= HODINA_MS) {
+            val hodina = odkedyDopreduV(teraz)
+            hodiny.firstOrNull { it.cas == hodina }?.let { return it.teplota }
+        }
+        return teplotaTeraz ?: dnesV(teraz)?.maxTeplota
+    }
+
+    /**
+     * Dnesny den V CASE POHLADU. [dnes] je prvy den odpovede, takze po
+     * polnoci by vcerajsia predpoved ukazovala vcerajsi rozsah ako dnesny.
+     * Ked dnesok v odpovedi nie je vobec (velmi stara cache), radsej nic.
+     */
+    fun dnesV(teraz: Long): Den? {
+        val datum = casMiesta(teraz)?.take(10) ?: return dnes
+        return dni.firstOrNull { it.datum == datum }
+    }
+
+    /**
+     * Kolko este NAPRSI dnes — od aktualnej hodiny do polnoci.
+     *
+     * Widget ma hovorit, co bude, nie co bolo: rano o siedmej prselo 14 mm,
+     * vecer uz podla predpovede nic — „dnes 14 mm" vtedy len straší
+     * (zadanie z 22. 10. 2026). Bez hodinovky sa to rozdelit neda, vtedy
+     * ostava celodenny uhrn.
+     */
+    fun zrazkyEsteDnes(teraz: Long): Double {
+        val den = dnesV(teraz) ?: return 0.0
+        if (hodiny.isEmpty()) return den.zrazkyMm
+        val od = odkedyDopreduV(teraz)
+        return hodiny.filter { it.den == den.datum && it.cas >= od }.sumOf { it.zrazkyMm }
+    }
+
     companion object {
+        private const val HODINA_MS = 3_600_000L
 
         /**
          * Rozparsuje odpoved Open-Meteo. Vrati null, ked odpoved nema ani

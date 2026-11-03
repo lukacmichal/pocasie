@@ -147,4 +147,36 @@ class PredpovedTest {
                       vychod = "2026-06-21T23:50", zapad = "2026-06-21T00:40")
         assertNull(den.dlzkaDnaMin)
     }
+    // ── „teraz" v case pohladu, nie stiahnutia ────────────────────────────
+
+    private val hodinaMs = 3_600_000L
+
+    @Test
+    fun `cerstve stiahnutie ukazuje namerany stav`() {
+        val p = Predpoved.zJson(plna, 0)!!
+        assertEquals(18.3, p.teplotaV(30 * 60_000L)!!, 0.001)
+    }
+
+    @Test
+    fun `po dvoch hodinach sa teplota berie z hodinovky`() {
+        // Stiahnute o 12:00 pri 18,3 °C; o 14:10 ma ukazat predpoved na 14:00,
+        // nie zamrznutych 18,3 (chyba widgetu z 22. 10. 2026).
+        val p = Predpoved.zJson(plna, 0)!!
+        assertEquals("2026-09-03T14:10", p.casMiesta(2 * hodinaMs + 10 * 60_000L))
+        assertEquals(20.4, p.teplotaV(2 * hodinaMs + 10 * 60_000L)!!, 0.001)
+        assertEquals("2026-09-03T14:00", p.odkedyDopreduV(2 * hodinaMs + 10 * 60_000L))
+    }
+
+    @Test
+    fun `za koncom hodinovky ostava namerany stav`() {
+        val p = Predpoved.zJson(plna, 0)!!
+        assertEquals(18.3, p.teplotaV(5 * hodinaMs)!!, 0.001)
+    }
+
+    @Test
+    fun `po polnoci je dnes uz dalsi den`() {
+        val p = Predpoved.zJson(plna, 0)!!
+        assertEquals("2026-09-04", p.dnesV(13 * hodinaMs)!!.datum)
+        assertNull(p.dnesV(40 * hodinaMs))
+    }
 }

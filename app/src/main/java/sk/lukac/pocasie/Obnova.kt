@@ -186,7 +186,6 @@ object Obnova {
                     continue
                 }
                 Ulozisko.uloz(ctx, miesto, json)
-                Prenos.zapis(ctx, json.toByteArray().size.toLong())
                 hotovych++
             } catch (e: Exception) {
                 Log.w(TAG, "predpoved pre ${miesto.nazov} sa nestiahla", e)
@@ -201,16 +200,19 @@ object Obnova {
             val rano = inputData.getBoolean(KLUC_RANO, false)
             // Nemerana siet, ale simka: nestahovat nic (ANDROID-5).
             val naDatach = Prenos.naMobilnychDatach(ctx)
-            if (naDatach && !rano) return Result.success()
+            if (naDatach && !rano) {
+                PocasieWidgetProvider.prekresliVsetky(ctx)
+                return Result.success()
+            }
             val hotovych = if (naDatach) 0
                 else stiahniVsetko(ctx, inputData.getBoolean(KLUC_VYNUTENE, false))
             val neuspech = hotovych == 0 && Prefs.miesta(ctx).isNotEmpty()
-            if (!neuspech) {
-                Alerty.vyhodnot(ctx)
-                // Widget kresli launcher a o novych datach sa sam nedozvie —
-                // bez tohto by ukazoval stare cisla az do svojho dalsieho tiknutia.
-                PocasieWidgetProvider.prekresliVsetky(ctx)
-            }
+            if (!neuspech) Alerty.vyhodnot(ctx)
+            // Prekreslit VZDY, aj ked sa nic nestiahlo: widget potom kresli
+            // z doterajsej predpovede to, co plati PRAVE TERAZ (teplota
+            // aktualnej hodiny, zvysne zrazky), nie stav spred stiahnutia.
+            // Bez tohto by cakal na svoje dalsie tiknutie.
+            PocasieWidgetProvider.prekresliVsetky(ctx)
             if (!rano) {
                 // Ziadne miesto sa nestiahlo = pravdepodobne siet. Retry, nie
                 // failure: WorkManager to skusi s odstupom a nezrusi rozvrh.
